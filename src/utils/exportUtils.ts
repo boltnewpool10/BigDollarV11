@@ -14,6 +14,7 @@ declare module 'jspdf' {
 export const exportToExcel = (winners: PrizeWinner[]) => {
   const exportData = winners.map(winner => {
     const prizeCategory = prizeCategories.find(p => p.id === winner.prize_category);
+    const ticketNumbers = winner.ticket_numbers ? JSON.parse(winner.ticket_numbers) : [];
     return {
       'Prize Category': prizeCategory?.name || 'Unknown',
       'Prize Icon': prizeCategory?.icon || '',
@@ -25,9 +26,9 @@ export const exportToExcel = (winners: PrizeWinner[]) => {
       'NRPC Score': winner.nrpc,
       'Refund Percentage': winner.refund_percent,
       'Total Tickets Owned': winner.total_tickets,
-      'Ticket Range Start': `#${Math.min(...JSON.parse(winner.ticket_numbers || '[]')).toString().padStart(4, '0')}` || 'N/A',
-      'Ticket Range End': `#${Math.max(...JSON.parse(winner.ticket_numbers || '[]')).toString().padStart(4, '0')}` || 'N/A',
-      'All Ticket Numbers': winner.ticket_numbers ? JSON.parse(winner.ticket_numbers).map((t: number) => `#${t.toString().padStart(4, '0')}`).join(', ') : 'N/A',
+      'Ticket Range Start': ticketNumbers.length > 0 ? `#${Math.min(...ticketNumbers).toString().padStart(4, '0')}` : 'N/A',
+      'Ticket Range End': ticketNumbers.length > 0 ? `#${Math.max(...ticketNumbers).toString().padStart(4, '0')}` : 'N/A',
+      'All Ticket Numbers': ticketNumbers.length > 0 ? ticketNumbers.map((t: number) => `#${t.toString().padStart(4, '0')}`).join(', ') : 'N/A',
       'Won Date': new Date(winner.won_at).toLocaleDateString(),
       'Won Time': new Date(winner.won_at).toLocaleTimeString(),
       'Guide ID': winner.guide_id
@@ -80,6 +81,10 @@ export const exportToPDF = (winners: PrizeWinner[]) => {
   // Prepare table data
   const tableData = winners.map(winner => {
     const prizeCategory = prizeCategories.find(p => p.id === winner.prize_category);
+    const ticketNumbers = winner.ticket_numbers ? JSON.parse(winner.ticket_numbers) : [];
+    const ticketRange = ticketNumbers.length > 0 ? 
+      `#${Math.min(...ticketNumbers).toString().padStart(4, '0')}-#${Math.max(...ticketNumbers).toString().padStart(4, '0')}` : 
+      'N/A';
     const ticketNumbers = winner.ticket_numbers ? JSON.parse(winner.ticket_numbers) : [];
     const ticketRange = ticketNumbers.length > 0 ? 
       `#${Math.min(...ticketNumbers).toString().padStart(4, '0')}-#${Math.max(...ticketNumbers).toString().padStart(4, '0')}` : 
